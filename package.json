@@ -1,10 +1,13 @@
 {
-  "name": "flickrcrawler-cli",
+  "name": "crawlflickr",
+  "bin": {
+    "flickr": "./index.js"
+  },
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "koder17",
   "license": "ISC",
