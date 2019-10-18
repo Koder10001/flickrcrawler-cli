@@ -3,7 +3,7 @@
   "bin": {
     "flickr": "./index.js"
   },
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -12,6 +12,7 @@
   "author": "koder17",
   "license": "ISC",
   "dependencies": {
-    "flickr-sdk": "^3.9.0"
+    "flickr-sdk": "^3.9.0",
+    "inquirer": "^7.0.0"
   }
 }
