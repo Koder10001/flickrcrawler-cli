@@ -30,14 +30,14 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
         message: "Download",
         choices: ["photostream","album","favorite","gallery","group","all album"]
     }])).reply;
-
+    let ID = "";
+    let curPage = 1;
+    let res = "";
     switch(mode){
         case "photostream":
-            let ID = await flickr.urls.lookupUser({url: url});
+            ID = await flickr.urls.lookupUser({url: url});
             ID = ID.body.user.id;
             console.log(ID);
-            let curPage = 1;
-            let res = "";
             do {
                 res = await flickr.people.getPhotos({
                     user_id: ID,
@@ -52,6 +52,113 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
                 curPage++;
             }while(curPage <= res.body.photos.pages);
         break;
+        case "album":
+            ID = await flickr.urls.lookupUser({url: url});
+            ID = ID.body.user.id;
+            console.log(url.split("/")[6]);
+            do {
+                res = await flickr.photosets.getPhotos({
+                    user_id: ID,
+                    photoset_id: url.split("/")[6],
+                    per_page: 500,
+                    page: curPage,
+                    extras: "url_sq,url_q,url_s,url_n,url_w,url_m,url_z,url_c,url_l,url_h,url_k,url_o"
+                })
+                if(!fs.existsSync(mode+"-"+url.split("/")[6])){
+                    fs.mkdirSync(mode+"-"+url.split("/")[6]);
+                }
+                await Download(res.body.photoset.photo,mode+"-"+url.split("/")[6],curPage,res.body.photoset.total);
+                curPage++;
+            }while(curPage <= res.body.photoset.pages);
+        break;
+        case "favorite":
+            ID = await flickr.urls.lookupUser({url: url});
+            ID = ID.body.user.id;
+            console.log(ID);
+            do {
+                res = await flickr.favorites.getList({
+                    user_id: ID,
+                    per_page: 500,
+                    page: curPage,
+                    extras: "url_sq,url_q,url_s,url_n,url_w,url_m,url_z,url_c,url_l,url_h,url_k,url_o"
+                })
+                if(!fs.existsSync(mode+"-"+ID)){
+                    fs.mkdirSync(mode+"-"+ID);
+                }
+                await Download(res.body.photos.photo,mode+"-"+ID,curPage,res.body.photos.total);
+                curPage++;
+            }while(curPage <= res.body.photos.pages);
+        break;
+        case "gallery":
+            ID = await flickr.urls.lookupGallery({url: url});
+            ID = ID.body.gallery.gallery_id;
+            console.log(ID);
+            do {
+                res = await flickr.galleries.getPhotos({
+                    gallery_id: ID,
+                    per_page: 500,
+                    page: curPage,
+                    extras: "url_sq,url_q,url_s,url_n,url_w,url_m,url_z,url_c,url_l,url_h,url_k,url_o"
+                })
+                if(!fs.existsSync(mode+"-"+ID)){
+                    fs.mkdirSync(mode+"-"+ID);
+                }
+                await Download(res.body.photos.photo,mode+"-"+ID,curPage,res.body.photos.total);
+                curPage++;
+            }while(curPage <= res.body.photos.pages);
+        break;
+        case "group":
+            ID = await flickr.urls.lookupGroup({url: url});
+            ID = ID.body.group.id;
+            console.log(ID);
+            do {
+                res = await flickr.groups.pools.getPhotos({
+                    group_id: ID,
+                    per_page: 500,
+                    page: curPage,
+                    extras: "url_sq,url_q,url_s,url_n,url_w,url_m,url_z,url_c,url_l,url_h,url_k,url_o"
+                })
+                if(!fs.existsSync(mode+"-"+ID)){
+                    fs.mkdirSync(mode+"-"+ID);
+                }
+                await Download(res.body.photos.photo,mode+"-"+ID,curPage,res.body.photos.total);
+                curPage++;
+            }while(curPage <= res.body.photos.pages);
+        break;
+        case "all album":
+            ID = await flickr.urls.lookupUser({url: url});
+            ID = ID.body.user.id;
+            console.log(ID);
+            let photosets = "";
+            let curAlPage = 1;
+
+            do{
+                photosets = await flickr.photosets.getList({user_id: ID,page: curAlPage,per_page: 500});
+                let ids = photosets.body.photosets.photoset.map(x=>{
+                    return x.id;
+                })
+                for(let i = 0;i < ids.length; i++) {
+                    readline.cursorTo(process.stdout,0,process.stdout.rows-1);
+                    console.print(i+1+"/"+ids.length + " " + ids[i]);
+                    curPage = 1;
+                    do {
+                        res = await flickr.photosets.getPhotos({
+                            user_id: ID,
+                            photoset_id: ids[i],
+                            per_page: 500,
+                            page: curPage,
+                            extras: "url_sq,url_q,url_s,url_n,url_w,url_m,url_z,url_c,url_l,url_h,url_k,url_o"
+                        }).catch(err=>{});
+                        if(!fs.existsSync("album-"+ids[i])){
+                            fs.mkdirSync("album-"+ids[i]);
+                        }
+                        await Download(res.body.photoset.photo,"album-"+ids[i],curPage,res.body.photoset.total);
+                        curPage++;
+                    }while(curPage <= res.body.photoset.pages);
+                    curAlPage++;
+                }
+            }while(curAlPage <= photosets.body.photosets.pages);
+        break;
     }
 
     process.exit();
@@ -61,11 +168,12 @@ async function Download(arr,folder,page,total){
     arr = arr.map(x=>{
         return x.url_o || x.url_k || x.url_h || x.url_l || x.url_c || x.url_z || x.url_m || x.url_w || x.url_n || x.url_s || x.url_q || x.url_sq;
     })
+    readline.cursorTo(process.stdout,0,2);
     for(let i = 0;i<arr.length;i++){
         let filesize = await download(arr[i],folder);
         // console.log();
-        readline.cursorTo(process.stdout,0,1);
-        process.stdout.write(i+1+500*(page-1)+ "/" + total + " " + lastIndex(arr[i].split("/")) + " " + (filesize/1024000).toFixed(2)+" MB");
+        // process.stdout.write("\r"+(i+1+500*(page-1))+ "/" + total + " " + lastIndex(arr[i].split("/")) + " " + (filesize/1024000).toFixed(2)+" MB");
+        console.print((i+1+500*(page-1))+ "/" + total + " " + lastIndex(arr[i].split("/")) + " " + (filesize/1024000).toFixed(2)+" MB");
     }
 }
 
@@ -87,4 +195,14 @@ function download(url,folder){
 
 function lastIndex(arr){
     return arr[arr.length-1];
+}
+console.clear = ()=>{
+    for(let i = 0;i<process.stdout.rows;i++){
+        readline.cursorTo(process.stdout,0,0);
+        console.log("\r");
+    }
+};
+console.print = (str)=>{
+    process.stdout.write("\r"+ (" ".repeat(process.stdout.columns))+ "\r");
+    process.stdout.write(str);
 }
