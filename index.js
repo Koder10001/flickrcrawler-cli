@@ -35,6 +35,10 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
     let res = "";
     switch(mode){
         case "photostream":
+            if(url.search(/^(flickr.com|https:\/\/www.flickr.com)\/\w*\/[a-zA-Z0-9-_@]*/)==-1){
+                console.log("https://flickr.com/photos/xxxxxxxxx@N0x...");
+                process.exit();
+            }
             ID = await flickr.urls.lookupUser({url: url});
             ID = ID.body.user.id;
             console.log(ID);
@@ -53,6 +57,10 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
             }while(curPage <= res.body.photos.pages);
         break;
         case "album":
+            if(url.search(/^(flickr.com|https:\/\/www.flickr.com)\/\w*\/[a-zA-Z0-9-_@]*\/albums\/[0-9]+/)==-1){
+                console.log("https://flickr.com/photos/xxxxxxxxx@N0x/albums/xxxxxxxxxxxxxxxxx...");
+                process.exit();
+            }
             ID = await flickr.urls.lookupUser({url: url});
             ID = ID.body.user.id;
             console.log(url.split("/")[6]);
@@ -72,6 +80,10 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
             }while(curPage <= res.body.photoset.pages);
         break;
         case "favorite":
+            if(url.search(/^(flickr.com|https:\/\/www.flickr.com)\/\w*\/[a-zA-Z0-9-_@]+\/albums\/[0-9]+/)==-1){
+                console.log("https://flickr.com/photos/xxxxxxxxx@N0x...");
+                process.exit();
+            }
             ID = await flickr.urls.lookupUser({url: url});
             ID = ID.body.user.id;
             console.log(ID);
@@ -90,6 +102,10 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
             }while(curPage <= res.body.photos.pages);
         break;
         case "gallery":
+            if(url.search(/^(flickr.com|https:\/\/www.flickr.com)\/\w*\/[a-zA-Z0-9-_@]*\/galleries\/[0-9]+/)==-1){
+                console.log("https://flickr.com/photos/xxxxxxxxx@N0x/galleries/xxxxxxxxxxxxxxxxx...");
+                process.exit();
+            }
             ID = await flickr.urls.lookupGallery({url: url});
             ID = ID.body.gallery.gallery_id;
             console.log(ID);
@@ -108,6 +124,10 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
             }while(curPage <= res.body.photos.pages);
         break;
         case "group":
+            if(url.search(/^(flickr.com|https:\/\/www.flickr.com)\/groups\/[a-zA-Z0-9-_@]*/)==-1){
+                console.log("https://flickr.com/groups/xxxxxxx@N0x...");
+                process.exit();
+            }
             ID = await flickr.urls.lookupGroup({url: url});
             ID = ID.body.group.id;
             console.log(ID);
@@ -126,6 +146,10 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
             }while(curPage <= res.body.photos.pages);
         break;
         case "all album":
+            if(url.search(/^(flickr.com|https:\/\/www.flickr.com)\/\w*\/[a-zA-Z0-9-_@]*/)==-1){
+                console.log("https://flickr.com/photos/xxxxxxxxx@N0x...");
+                process.exit();
+            }
             ID = await flickr.urls.lookupUser({url: url});
             ID = ID.body.user.id;
             console.log(ID);
