@@ -34,6 +34,8 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
     let curPage = 1;
     let res = "";
     switch(mode){
+
+
         case "photostream":
             if(url.search(/^(flickr.com|https:\/\/www.flickr.com|https:\/\/flickr.com)\/\w+\/[a-zA-Z0-9-_@]+/)==-1){
                 console.log("https://flickr.com/photos/xxxxxxxxx@N0x...");
@@ -56,6 +58,8 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
                 curPage++;
             }while(curPage <= res.body.photos.pages);
         break;
+
+
         case "album":
             if(url.search(/^(flickr.com|https:\/\/www.flickr.com|https:\/\/flickr.com)\/\w+\/[a-zA-Z0-9-_@]+\/albums\/[0-9]+/)==-1){
                 console.log("https://flickr.com/photos/xxxxxxxxx@N0x/albums/xxxxxxxxxxxxxxxxx...");
@@ -79,6 +83,8 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
                 curPage++;
             }while(curPage <= res.body.photoset.pages);
         break;
+
+
         case "favorite":
             if(url.search(/^(flickr.com|https:\/\/www.flickr.com|https:\/\/flickr.com)\/\w+\/[a-zA-Z0-9-_@]+/)==-1){
                 console.log("https://flickr.com/photos/xxxxxxxxx@N0x...");
@@ -101,6 +107,8 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
                 curPage++;
             }while(curPage <= res.body.photos.pages);
         break;
+
+
         case "gallery":
             if(url.search(/^(flickr.com|https:\/\/www.flickr.com|https:\/\/flickr.com)\/\w+\/[a-zA-Z0-9-_@]+\/galleries\/[0-9]+/)==-1){
                 console.log("https://flickr.com/photos/xxxxxxxxx@N0x/galleries/xxxxxxxxxxxxxxxxx...");
@@ -123,6 +131,8 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
                 curPage++;
             }while(curPage <= res.body.photos.pages);
         break;
+
+        
         case "group":
             if(url.search(/^(flickr.com|https:\/\/www.flickr.com|https:\/\/flickr.com)\/groups\/[a-zA-Z0-9-_@]+/)==-1){
                 console.log("https://flickr.com/groups/xxxxxxx@N0x...");
@@ -145,6 +155,8 @@ var flickr = new Flickr(Flickr.OAuth.createPlugin(flickrKeys.api_key,flickrKeys.
                 curPage++;
             }while(curPage <= res.body.photos.pages);
         break;
+
+
         case "all album":
             if(url.search(/^(flickr.com|https:\/\/www.flickr.com|https:\/\/flickr.com)\/\w+\/[a-zA-Z0-9-_@]+/)==-1){
                 console.log("https://flickr.com/photos/xxxxxxxxx@N0x...");
@@ -201,7 +213,11 @@ async function Download(arr,folder,page,total){
 
 function download(url,folder){
     return new Promise(resolve=>{
-        let file = fs.createWriteStream(path.join(folder,lastIndex(url.split("/"))));
+        let fileDes = path.join(folder,lastIndex(url.split("/")));
+        if(fs.existsSync(fileDes)){
+            resolve(fs.statSync(fileDes).size);
+        }
+        let file = fs.createWriteStream(fileDes);
         let curChunk = 0;
         https.get(url,res=>{
             res.pipe(file);
